@@ -24,6 +24,7 @@ apps:
     common-id: org.gnome.Fractal
     desktop: usr/share/applications/org.gnome.Fractal.desktop
     plugs:
+      - home
       - gsettings
       - network
       - opengl
