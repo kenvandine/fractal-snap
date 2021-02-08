@@ -34,6 +34,7 @@ parts:
   fractal:
     parse-info: [usr/share/metainfo/org.gnome.Fractal.metainfo.xml]
     source: https://gitlab.gnome.org/GNOME/fractal.git
+    source-commit: 8781378a797d10d6b8e22698aa7cc8d825f13ae5
     plugin: meson
     meson-parameters: [--prefix=/usr]
     organize:
