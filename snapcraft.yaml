@@ -35,7 +35,7 @@ parts:
     parse-info: [usr/share/metainfo/org.gnome.Fractal.metainfo.xml]
     source: https://gitlab.gnome.org/GNOME/fractal.git
     plugin: meson
-    meson-parameters: [--prefix=/usr]
+    meson-parameters: [--prefix=/snap/fractal/current/usr]
     organize:
       snap/fractal/current/usr: usr
     build-packages:
