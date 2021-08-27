@@ -34,6 +34,8 @@ parts:
   fractal:
     parse-info: [usr/share/metainfo/org.gnome.Fractal.metainfo.xml]
     source: https://gitlab.gnome.org/GNOME/fractal.git
+    source-type: git
+    source-commit: 8781378a797d10d6b8e22698aa7cc8d825f13ae5
     plugin: meson
     meson-parameters: [--prefix=/snap/fractal/current/usr]
     organize:
@@ -49,6 +51,7 @@ parts:
       - libges-1.0-dev
       - cmake
     stage-packages:
+      - gstreamer1.0-gtk3
       - gstreamer1.0-plugins-bad
       - gstreamer1.0-plugins-base
       - gstreamer1.0-plugins-good
@@ -64,12 +67,21 @@ parts:
     override-pull: |
       snapcraftctl pull
       snapcraftctl set-version $(git describe --tags --abbrev=10)
+      sed -i.bak -e 's|Icon=@icon@|Icon=${SNAP}/meta/gui/org.gnome.Fractal.svg|g' $SNAPCRAFT_PART_SRC/fractal-gtk/res/org.gnome.Fractal.desktop.in.in
+
     override-build: |
       curl https://sh.rustup.rs -sSf | sh -s -- -y
       . $HOME/.cargo/env
       rustup toolchain install nightly
       rustup default nightly
+      cd $SNAPCRAFT_PART_SRC
+      # Update a couple of crates that broke since the commit we are building
+      cargo update -p lexical-core --precise 0.7.5
+      cargo update -p olm-rs --precise 1.0.1
+      cd $SNAPCRAFT_PART_BUILD
       snapcraftctl build
+      mkdir -p $SNAPCRAFT_PART_INSTALL/meta/gui/
+      cp $SNAPCRAFT_PART_SRC/fractal-gtk/res/icons/hicolor/scalable/apps/org.gnome.Fractal.svg $SNAPCRAFT_PART_INSTALL/meta/gui/
     prime:
       - -usr/lib/*/libpango*
       - -usr/lib/*/libfribidi*
