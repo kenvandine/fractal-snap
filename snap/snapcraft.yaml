@@ -26,6 +26,8 @@ apps:
     plugs:
       - home
       - removable-media
+      - network
+      - audio-playback
 
 parts:
   ffmpeg:
@@ -104,7 +106,6 @@ parts:
     organize:
       snap/fractal/current/usr: usr
     build-packages:
-      - curl
       - libssl-dev
       - libgstreamer1.0-dev
       - libgstreamer-plugins-bad1.0-dev
