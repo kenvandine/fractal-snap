@@ -10,6 +10,10 @@ architectures:
 #  - build-on: arm64
 #  - build-on: armhf
 
+layout:
+  /usr/share/fractal/resources.gresource:
+    symlink: $SNAP/usr/share/fractal/resources.gresource
+    
 slots:
   # for GtkApplication registration
   fractal:
@@ -102,9 +106,7 @@ parts:
     source-type: git
     source-tag: $SNAPCRAFT_PROJECT_VERSION
     plugin: meson
-    meson-parameters: [--prefix=/snap/fractal/current/usr, -Dprofile=default]
-    organize:
-      snap/fractal/current/usr: usr
+    meson-parameters: [--prefix=/usr, -Dprofile=default]
     build-packages:
       - libssl-dev
       - libgstreamer1.0-dev
@@ -130,8 +132,6 @@ parts:
       - RUSTUP_HOME: $CRAFT_STAGE/usr/share/rust
       - CARGO_HOME: $CRAFT_STAGE/usr/share/rust
       - CARGO_BUILD_JOBS: $CRAFT_PARALLEL_BUILD_COUNT
-    prime:
-      - -snap/fractal
 
   # Find files provided by the base and platform snap and ensure they aren't
   # duplicated in this snap
