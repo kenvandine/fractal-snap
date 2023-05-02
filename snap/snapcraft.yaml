@@ -2,14 +2,18 @@ name: fractal
 adopt-info: fractal
 grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict
-base: core20
+base: core22
+version: 4.4.2
+icon: org.gnome.Fractal.svg
 architectures:
   - build-on: amd64
+#  - build-on: arm64
+#  - build-on: armhf
 
 layout:
   /usr/share/fractal/resources.gresource:
     symlink: $SNAP/usr/share/fractal/resources.gresource
-
+    
 slots:
   # for GtkApplication registration
   fractal:
@@ -19,39 +23,100 @@ slots:
 
 apps:
   fractal:
-    extensions: [gnome-3-38]
+    extensions: [gnome]
     command: usr/bin/fractal
     common-id: org.gnome.Fractal
     desktop: usr/share/applications/org.gnome.Fractal.desktop
     plugs:
-      - audio-playback
       - home
-      - gsettings
+      - removable-media
       - network
-      - opengl
-      - password-manager-service
+      - audio-playback
 
 parts:
+  ffmpeg:
+    # WORKAROUND:
+    # Build from source because the ffmpeg package installs libraries as dependencies
+    # that conflict with the Gnome extension
+    plugin: autotools
+    source: https://ffmpeg.org/releases/ffmpeg-6.0.tar.xz
+    source-checksum: sha256/57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082
+    autotools-configure-parameters:
+      # WORKAROUND: Install to /usr instead of /usr/local because it's not in search paths
+      - --prefix=/usr
+      - --disable-debug
+      - --disable-doc
+      - --disable-static
+      - --enable-gpl
+      - --enable-shared
+      - --disable-ffplay
+      - --disable-devices
+      - --enable-gnutls
+      - --enable-libmp3lame
+      - --enable-libvorbis
+    build-packages:
+      - nasm
+      - libgnutls28-dev
+      - libmp3lame-dev
+      - libvorbis-dev
+    stage-packages:
+      - libmp3lame0
+    stage:
+      - -usr/include
+  gtksourceview:
+    source: https://gitlab.gnome.org/GNOME/gtksourceview.git
+    source-branch: 'gtksourceview-4-6'
+    source-depth: 1
+    plugin: meson
+    meson-parameters:
+     - --prefix=/usr
+     - -Ddebug=true
+     - -Doptimization=3
+    build-packages:
+      - gettext
+      - libxml2-dev
+    override-pull: |
+      set -eux
+      snapcraftctl pull
+      sed -i 's#Werror=missing-include-dirs#Wmissing-include-dirs#g' meson.build
+    prime:
+      - usr/lib/*/libgtksourceview*
+  rustup:
+    plugin: nil
+    build-packages: [wget]
+    build-environment:
+      - RUSTUP_HOME: $CRAFT_PART_INSTALL/usr/share/rust
+      - CARGO_HOME: $CRAFT_PART_INSTALL/usr/share/rust
+      - CARGO_BUILD_JOBS: $CRAFT_PARALLEL_BUILD_COUNT
+    override-pull: |
+      wget https://sh.rustup.rs -O $CRAFT_PART_SRC/rustup-init.sh
+      chmod +x $CRAFT_PART_SRC/rustup-init.sh
+    override-build: |
+      $CRAFT_PART_SRC/rustup-init.sh -y --no-modify-path
+      mkdir -p $CRAFT_PART_INSTALL/usr/bin
+      for i in `ls $RUSTUP_HOME/bin/`; do
+        ln -s ../share/rust/bin/$i $CRAFT_PART_INSTALL/usr/bin/$i
+      done
+    override-prime: |
+      echo 'Skip Prime'
   fractal:
+    after: [rustup, gtksourceview, ffmpeg]
     parse-info: [usr/share/metainfo/org.gnome.Fractal.metainfo.xml]
     source: https://gitlab.gnome.org/GNOME/fractal.git
     source-type: git
-    source-commit: 8781378a797d10d6b8e22698aa7cc8d825f13ae5
+    source-tag: $SNAPCRAFT_PROJECT_VERSION
     plugin: meson
-    meson-parameters: [--prefix=/snap/fractal/current/usr]
-    organize:
-      snap/fractal/current/usr: usr
+    meson-parameters: [--prefix=/usr, -Dprofile=default]
     build-packages:
-      - appstream
-      - curl
       - libssl-dev
       - libgstreamer1.0-dev
       - libgstreamer-plugins-bad1.0-dev
       - libgstreamer-plugins-base1.0-dev
       - libgstreamer-plugins-good1.0-dev
       - libges-1.0-dev
-      - cmake
+      - libhandy-0.0-dev
     stage-packages:
+      - libgspell-1-2
       - gstreamer1.0-gtk3
       - gstreamer1.0-plugins-bad
       - gstreamer1.0-plugins-base
@@ -62,42 +127,27 @@ parts:
       - libgstreamer-plugins-bad1.0-0
       - libgstreamer-plugins-base1.0-0
       - libgstreamer-plugins-good1.0-0
+      - libhandy-0.0-0
     build-environment:
-      - PATH: $HOME/.cargo/bin:$PATH
-      - PKG_CONFIG_PATH: $SNAPCRAFT_STAGE/usr/lib/pkgconfig:$PKG_CONFIG_PATH
-    override-pull: |
-      snapcraftctl pull
-      snapcraftctl set-version $(git describe --tags --abbrev=10)
-      sed -i.bak -e 's|Icon=@icon@|Icon=${SNAP}/meta/gui/org.gnome.Fractal.svg|g' $SNAPCRAFT_PART_SRC/fractal-gtk/res/org.gnome.Fractal.desktop.in.in
-
-    override-build: |
-      curl https://sh.rustup.rs -sSf | sh -s -- -y
-      . $HOME/.cargo/env
-      rustup toolchain install nightly
-      rustup default nightly
-      cd $SNAPCRAFT_PART_SRC
-      # Update a couple of crates that broke since the commit we are building
-      cargo update -p lexical-core --precise 0.7.5
-      cargo update -p olm-rs --precise 1.0.1
-      cd $SNAPCRAFT_PART_BUILD
-      snapcraftctl build
-      mkdir -p $SNAPCRAFT_PART_INSTALL/meta/gui/
-      cp $SNAPCRAFT_PART_SRC/fractal-gtk/res/icons/hicolor/scalable/apps/org.gnome.Fractal.svg $SNAPCRAFT_PART_INSTALL/meta/gui/
-    prime:
-      - -usr/lib/*/libpango*
-      - -usr/lib/*/libfribidi*
-      - -usr/lib/*/libharf*
-      - -usr/lib/*/libwayland*
-      - -usr/lib/*/libffi*
+      - RUSTUP_HOME: $CRAFT_STAGE/usr/share/rust
+      - CARGO_HOME: $CRAFT_STAGE/usr/share/rust
+      - CARGO_BUILD_JOBS: $CRAFT_PARALLEL_BUILD_COUNT
 
   # Find files provided by the base and platform snap and ensure they aren't
   # duplicated in this snap
   cleanup:
-    after: [fractal]
+    after:  # Make this part run last; list all your other parts here
+      - fractal
+      - gtksourceview
+      - ffmpeg
+      - rustup
     plugin: nil
-    build-snaps: [core20, gnome-3-38-2004]
+    build-snaps:  # List all content-snaps and base snaps you're using here
+      - gnome-42-2204
+      - gtk-common-themes
+      - core22
     override-prime: |
       set -eux
-      for snap in "core20" "gnome-3-38-2004"; do
-        cd "/snap/$snap/current" && find . -type f,l -name *.so.* -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
-      done
+      for snap in "gnome-42-2204" "gtk-common-themes" "core22"; do
+      cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
+      done  
