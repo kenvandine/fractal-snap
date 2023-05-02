@@ -7,8 +7,7 @@ version: 4.4.2
 icon: org.gnome.Fractal.svg
 architectures:
   - build-on: amd64
-#  - build-on: arm64
-#  - build-on: armhf
+  - build-on: arm64
 
 layout:
   /usr/share/fractal/resources.gresource:
