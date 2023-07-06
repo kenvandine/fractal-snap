@@ -8,6 +8,10 @@ architectures:
   - build-on: arm64
   - build-on: armhf
 
+layout:
+  /usr/share/fractal:
+    symlink: $SNAP/usr/share/fractal
+    
 slots:
   # for GtkApplication registration
   fractal:
@@ -61,7 +65,7 @@ parts:
     source-type: git
     source-tag: '5.beta1'
     plugin: meson
-    meson-parameters: [--prefix=/snap/fractal/current/usr, -Dprofile=default, -Doptimization=3, -Dbuildtype=release]
+    meson-parameters: [--prefix=/usr, -Dprofile=default, -Doptimization=3, -Dbuildtype=release]
     organize:
       snap/fractal/current: .
     build-packages:
@@ -81,13 +85,13 @@ parts:
       - PKG_CONFIG_PATH: $CRAFT_STAGE/usr/lib/$CRAFT_ARCH_TRIPLET/pkgconfig:$PKG_CONFIG_PATH
     override-pull: |
       craftctl default
-      #patch -p1 < $CRAFT_PROJECT_DIR/fractal.patch
+      patch -p1 < $CRAFT_PROJECT_DIR/fractal.patch
     override-build: |
       craftctl default
-      #mkdir -p $CRAFT_PART_INSTALL/meta/gui
-      #cp -r $CRAFT_PART_INSTALL/snap/fractal/current/usr/share/icons $CRAFT_PART_INSTALL/meta/gui/
-      #for i in `find $CRAFT_PART_INSTALL/meta/gui/icons -name "*.svg" -o -name "*.png"`; do
-      #  mv $i "`dirname $i`/snap.$CRAFT_PROJECT_NAME.`basename $i`"
+      mkdir -p $CRAFT_PART_INSTALL/meta/gui
+      cp -r $CRAFT_PART_INSTALL/snap/fractal/current/usr/share/icons $CRAFT_PART_INSTALL/meta/gui/
+      for i in `find $CRAFT_PART_INSTALL/meta/gui/icons -name "*.svg" -o -name "*.png"`; do
+        mv $i "`dirname $i`/snap.$CRAFT_PROJECT_NAME.`basename $i`"
       #done
     prime:
       - -snap/fractal
