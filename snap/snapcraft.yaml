@@ -5,7 +5,7 @@ confinement: strict
 base: core22
 architectures:
   - build-on: amd64
-  # - build-on: arm64
+  - build-on: arm64
     
 slots:
   # for GtkApplication registration
@@ -76,10 +76,7 @@ parts:
       - RUSTUP_HOME: $CRAFT_STAGE/usr/share/rust
       - CARGO_HOME: $CRAFT_STAGE/usr/share/rust
       - CARGO_BUILD_JOBS: $CRAFT_PARALLEL_BUILD_COUNT
-      - PKG_CONFIG_PATH: $CRAFT_STAGE/usr/lib/$CRAFT_ARCH_TRIPLET/pkgconfig:$PKG_CONFIG_PATH
-    override-pull: |
-      craftctl default
-      # patch -p1 < $CRAFT_PROJECT_DIR/fractal.patch
+      - PKG_CONFIG_PATH: $CRAFT_STAGE/usr/lib/$CRAFT_ARCH_TRIPLET/pkgconfig:$PKG_CONFIG_PATH 
     organize: 
       snap/fractal/current: .
     override-build: |
