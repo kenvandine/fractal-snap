@@ -34,6 +34,7 @@ parts:
     plugin: meson
     meson-parameters: [ --prefix=/usr, -Dgir=false, -Dvapi=false, -Dgtk_doc=false]
     prime:
+      - -usr/include
       - -usr/lib/*/pkgconfig
       - -usr/share
 
@@ -56,11 +57,11 @@ parts:
     override-prime: |
       echo 'Skip Prime'
   fractal:
-    after: [ rustup, libshumate ]
+    after: [ rustup, libshumate, pipewire ]
     parse-info: [ usr/share/metainfo/org.gnome.Fractal.metainfo.xml ]
     source: https://gitlab.gnome.org/GNOME/fractal.git
     source-type: git
-    source-tag: '5.beta1'
+    source-tag: '5.rc1'
     plugin: meson
     meson-parameters: [--prefix=/snap/fractal/current/usr, -Dprofile=default, -Doptimization=3, -Dbuildtype=release]
     build-packages:
@@ -71,6 +72,7 @@ parts:
       - libgstreamer-plugins-good1.0-dev
       - libpipewire-0.3-dev
       - libclang-dev
+      - libspa-0.2-dev
       - xdg-desktop-portal-dev
     build-environment:
       - RUSTUP_HOME: $CRAFT_STAGE/usr/share/rust
@@ -87,15 +89,32 @@ parts:
         mv $i "`dirname $i`/snap.$CRAFT_PROJECT_NAME.`basename $i`"
       done
 
+  pipewire:
+    source: https://gitlab.freedesktop.org/pipewire/pipewire.git
+    source-tag: '0.3.79'
+    plugin: meson
+    meson-parameters:
+      - --prefix=/usr
+      - --buildtype=release
+      - --strip
+      - -Dalsa=disabled
+      - -Dpipewire-alsa=disabled
+      - -Djack=disabled
+      - -Dpipewire-jack=disabled
+      - -Dsession-managers=[]
+      - -Dexamples=disabled
+      - -Dman=disabled
+      - -Dtests=disabled
+    prime:
+      - -usr/lib/*/pkgconfig
+      - -usr/include
+
 
   deps:
     plugin: nil
     stage-packages:
       - libgstreamer-plugins-bad1.0-0
-      - libpipewire-0.3-0
     prime:
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libpipewire-0.3.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libpipewire-0.3.so.0.348.0
       - usr/lib/$CRAFT_ARCH_TRIPLET/libgstadaptivedemux-1.0.so.0
       - usr/lib/$CRAFT_ARCH_TRIPLET/libgstadaptivedemux-1.0.so.0.2003.0
       - usr/lib/$CRAFT_ARCH_TRIPLET/libgstbadaudio-1.0.so.0
