@@ -22,7 +22,6 @@ apps:
     desktop: usr/share/applications/org.gnome.Fractal.desktop
     plugs:
       - network
-      - network-bind
       - network-status
       - audio-playback
 
