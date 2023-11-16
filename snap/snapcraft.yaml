@@ -1,17 +1,11 @@
 name: fractal
 adopt-info: fractal
-grade: stable # must be 'stable' to release into candidate/stable channels
+grade: stable 
 confinement: strict
 base: core22
-version: 4.4.2
-icon: org.gnome.Fractal.svg
 architectures:
   - build-on: amd64
   - build-on: arm64
-
-layout:
-  /usr/share/fractal/resources.gresource:
-    symlink: $SNAP/usr/share/fractal/resources.gresource
     
 slots:
   # for GtkApplication registration
@@ -27,59 +21,22 @@ apps:
     common-id: org.gnome.Fractal
     desktop: usr/share/applications/org.gnome.Fractal.desktop
     plugs:
-      - home
-      - removable-media
       - network
+      - network-status
       - audio-playback
 
+
 parts:
-  ffmpeg:
-    # WORKAROUND:
-    # Build from source because the ffmpeg package installs libraries as dependencies
-    # that conflict with the Gnome extension
-    plugin: autotools
-    source: https://ffmpeg.org/releases/ffmpeg-6.0.tar.xz
-    source-checksum: sha256/57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082
-    autotools-configure-parameters:
-      # WORKAROUND: Install to /usr instead of /usr/local because it's not in search paths
-      - --prefix=/usr
-      - --disable-debug
-      - --disable-doc
-      - --disable-static
-      - --enable-gpl
-      - --enable-shared
-      - --disable-ffplay
-      - --disable-devices
-      - --enable-gnutls
-      - --enable-libmp3lame
-      - --enable-libvorbis
-    build-packages:
-      - nasm
-      - libgnutls28-dev
-      - libmp3lame-dev
-      - libvorbis-dev
-    stage-packages:
-      - libmp3lame0
-    stage:
-      - -usr/include
-  gtksourceview:
-    source: https://gitlab.gnome.org/GNOME/gtksourceview.git
-    source-branch: 'gtksourceview-4-6'
-    source-depth: 1
+  libshumate:
+    source: https://gitlab.gnome.org/GNOME/libshumate.git
+    source-tag: '1.0.3'
     plugin: meson
-    meson-parameters:
-     - --prefix=/usr
-     - -Ddebug=true
-     - -Doptimization=3
-    build-packages:
-      - gettext
-      - libxml2-dev
-    override-pull: |
-      set -eux
-      snapcraftctl pull
-      sed -i 's#Werror=missing-include-dirs#Wmissing-include-dirs#g' meson.build
+    meson-parameters: [ --prefix=/usr, -Dgir=false, -Dvapi=false, -Dgtk_doc=false]
     prime:
-      - usr/lib/*/libgtksourceview*
+      - -usr/include
+      - -usr/lib/*/pkgconfig
+      - -usr/share
+
   rustup:
     plugin: nil
     build-packages: [wget]
@@ -99,54 +56,89 @@ parts:
     override-prime: |
       echo 'Skip Prime'
   fractal:
-    after: [rustup, gtksourceview, ffmpeg]
-    parse-info: [usr/share/metainfo/org.gnome.Fractal.metainfo.xml]
+    after: [ rustup, libshumate, pipewire ]
+    parse-info: [ usr/share/metainfo/org.gnome.Fractal.metainfo.xml ]
     source: https://gitlab.gnome.org/GNOME/fractal.git
     source-type: git
-    source-tag: $SNAPCRAFT_PROJECT_VERSION
+    source-tag: '5.rc1'
     plugin: meson
-    meson-parameters: [--prefix=/usr, -Dprofile=default]
+    meson-parameters: [--prefix=/snap/fractal/current/usr, -Dprofile=default, -Doptimization=3, -Dbuildtype=release]
     build-packages:
       - libssl-dev
       - libgstreamer1.0-dev
       - libgstreamer-plugins-bad1.0-dev
       - libgstreamer-plugins-base1.0-dev
       - libgstreamer-plugins-good1.0-dev
-      - libges-1.0-dev
-      - libhandy-0.0-dev
-    stage-packages:
-      - libgspell-1-2
-      - gstreamer1.0-gtk3
-      - gstreamer1.0-plugins-bad
-      - gstreamer1.0-plugins-base
-      - gstreamer1.0-plugins-good
-      - gstreamer1.0-plugins-ugly
-      - libges-1.0-0
-      - libgstreamer1.0-0
-      - libgstreamer-plugins-bad1.0-0
-      - libgstreamer-plugins-base1.0-0
-      - libgstreamer-plugins-good1.0-0
-      - libhandy-0.0-0
+      - libclang-dev
+      - libspa-0.2-dev
+      - xdg-desktop-portal-dev
     build-environment:
       - RUSTUP_HOME: $CRAFT_STAGE/usr/share/rust
       - CARGO_HOME: $CRAFT_STAGE/usr/share/rust
       - CARGO_BUILD_JOBS: $CRAFT_PARALLEL_BUILD_COUNT
+      - PKG_CONFIG_PATH: $CRAFT_STAGE/usr/lib/$CRAFT_ARCH_TRIPLET/pkgconfig:$PKG_CONFIG_PATH 
+    organize: 
+      snap/fractal/current: .
+    override-build: |
+      craftctl default
+      mkdir -p $CRAFT_PART_INSTALL/meta/gui
+      cp -r $CRAFT_PART_INSTALL/snap/fractal/current/usr/share/icons $CRAFT_PART_INSTALL/meta/gui/
+      for i in `find $CRAFT_PART_INSTALL/meta/gui/icons -name "*.svg" -o -name "*.png"`; do
+        mv $i "`dirname $i`/snap.$CRAFT_PROJECT_NAME.`basename $i`"
+      done
 
-  # Find files provided by the base and platform snap and ensure they aren't
-  # duplicated in this snap
-  cleanup:
-    after:  # Make this part run last; list all your other parts here
-      - fractal
-      - gtksourceview
-      - ffmpeg
-      - rustup
+  pipewire:
+    source: https://gitlab.freedesktop.org/pipewire/pipewire.git
+    source-tag: '0.3.79'
+    plugin: meson
+    meson-parameters:
+      - --prefix=/usr
+      - --buildtype=release
+      - --strip
+      - -Dalsa=disabled
+      - -Dpipewire-alsa=disabled
+      - -Djack=disabled
+      - -Dpipewire-jack=disabled
+      - -Dsession-managers=[]
+      - -Dexamples=disabled
+      - -Dman=disabled
+      - -Dtests=disabled
+    prime:
+      - -usr/lib/*/pkgconfig
+      - -usr/include
+
+
+  deps:
     plugin: nil
-    build-snaps:  # List all content-snaps and base snaps you're using here
-      - gnome-42-2204
-      - gtk-common-themes
-      - core22
-    override-prime: |
-      set -eux
-      for snap in "gnome-42-2204" "gtk-common-themes" "core22"; do
-      cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
-      done  
+    stage-packages:
+      - libgstreamer-plugins-bad1.0-0
+    prime:
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstadaptivedemux-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstadaptivedemux-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstbadaudio-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstbadaudio-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstcodecparsers-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstcodecparsers-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstcodecs-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstcodecs-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstinsertbin-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstinsertbin-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstisoff-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstisoff-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstmpegts-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstmpegts-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstplay-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstplay-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstplayer-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstplayer-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstsctp-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstsctp-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgsttranscoder-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgsturidownloader-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgsturidownloader-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstva-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstva-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstwayland-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstwayland-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstwebrtc-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstwebrtc-1.0.so.0.2003.0
