@@ -69,7 +69,6 @@ parts:
       - libgstreamer-plugins-bad1.0-dev
       - libgstreamer-plugins-base1.0-dev
       - libgstreamer-plugins-good1.0-dev
-      - libpipewire-0.3-dev
       - libclang-dev
       - libspa-0.2-dev
       - xdg-desktop-portal-dev
