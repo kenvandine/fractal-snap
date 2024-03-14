@@ -60,7 +60,7 @@ parts:
     parse-info: [ usr/share/metainfo/org.gnome.Fractal.metainfo.xml ]
     source: https://gitlab.gnome.org/GNOME/fractal.git
     source-type: git
-    source-tag: '5'
+    source-tag: '6'
     plugin: meson
     meson-parameters: [--prefix=/snap/fractal/current/usr, -Dprofile=default, -Doptimization=3, -Dbuildtype=release]
     build-packages:
