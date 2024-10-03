@@ -2,10 +2,10 @@ name: fractal
 adopt-info: fractal
 grade: stable 
 confinement: strict
-base: core22
-architectures:
-  - build-on: amd64
-  - build-on: arm64
+base: core24
+platforms:
+  amd64:
+  arm64:
     
 slots:
   # for GtkApplication registration
@@ -29,7 +29,7 @@ apps:
 parts:
   libshumate:
     source: https://gitlab.gnome.org/GNOME/libshumate.git
-    source-tag: '1.0.3'
+    source-tag: '1.3.0'
     plugin: meson
     meson-parameters: [ --prefix=/usr, -Dgir=false, -Dvapi=false, -Dgtk_doc=false]
     prime:
@@ -37,46 +37,30 @@ parts:
       - -usr/lib/*/pkgconfig
       - -usr/share
 
-  rustup:
-    plugin: nil
-    build-packages: [wget]
-    build-environment:
-      - RUSTUP_HOME: $CRAFT_PART_INSTALL/usr/share/rust
-      - CARGO_HOME: $CRAFT_PART_INSTALL/usr/share/rust
-      - CARGO_BUILD_JOBS: $CRAFT_PARALLEL_BUILD_COUNT
-    override-pull: |
-      wget https://sh.rustup.rs -O $CRAFT_PART_SRC/rustup-init.sh
-      chmod +x $CRAFT_PART_SRC/rustup-init.sh
-    override-build: |
-      $CRAFT_PART_SRC/rustup-init.sh -y --no-modify-path
-      mkdir -p $CRAFT_PART_INSTALL/usr/bin
-      for i in `ls $RUSTUP_HOME/bin/`; do
-        ln -s ../share/rust/bin/$i $CRAFT_PART_INSTALL/usr/bin/$i
-      done
-    override-prime: |
-      echo 'Skip Prime'
   fractal:
-    after: [ rustup, libshumate, pipewire ]
+    after: [ libshumate, pipewire ]
     parse-info: [ usr/share/metainfo/org.gnome.Fractal.metainfo.xml ]
     source: https://gitlab.gnome.org/GNOME/fractal.git
     source-type: git
-    source-tag: '6'
+    source-tag: '8'
     plugin: meson
     meson-parameters: [--prefix=/snap/fractal/current/usr, -Dprofile=default, -Doptimization=3, -Dbuildtype=release]
     build-packages:
+      - gperf
       - libssl-dev
       - libgstreamer1.0-dev
       - libgstreamer-plugins-bad1.0-dev
       - libgstreamer-plugins-base1.0-dev
       - libgstreamer-plugins-good1.0-dev
+      - libprotobuf-c-dev
       - libclang-dev
       - libspa-0.2-dev
+      - rustc-1.80
+      - cargo-1.80
       - xdg-desktop-portal-dev
     build-environment:
-      - RUSTUP_HOME: $CRAFT_STAGE/usr/share/rust
-      - CARGO_HOME: $CRAFT_STAGE/usr/share/rust
       - CARGO_BUILD_JOBS: $CRAFT_PARALLEL_BUILD_COUNT
-      - PKG_CONFIG_PATH: $CRAFT_STAGE/usr/lib/$CRAFT_ARCH_TRIPLET/pkgconfig:$PKG_CONFIG_PATH 
+      - PKG_CONFIG_PATH: $CRAFT_STAGE/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/pkgconfig:$PKG_CONFIG_PATH 
     organize: 
       snap/fractal/current: .
     override-build: |
@@ -112,33 +96,36 @@ parts:
     plugin: nil
     stage-packages:
       - libgstreamer-plugins-bad1.0-0
+      - libprotobuf-c1
     prime:
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstadaptivedemux-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstadaptivedemux-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstbadaudio-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstbadaudio-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstcodecparsers-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstcodecparsers-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstcodecs-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstcodecs-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstinsertbin-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstinsertbin-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstisoff-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstisoff-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstmpegts-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstmpegts-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstplay-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstplay-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstplayer-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstplayer-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstsctp-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstsctp-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgsttranscoder-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgsturidownloader-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgsturidownloader-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstva-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstva-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstwayland-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstwayland-1.0.so.0.2003.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstwebrtc-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET/libgstwebrtc-1.0.so.0.2003.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libprotobuf-c.so.1.0.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libprotobuf-c.so.1
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstadaptivedemux-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstadaptivedemux-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstbadaudio-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstbadaudio-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstcodecparsers-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstcodecparsers-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstcodecs-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstcodecs-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstinsertbin-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstinsertbin-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstisoff-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstisoff-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstmpegts-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstmpegts-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstplay-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstplay-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstplayer-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstplayer-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstsctp-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstsctp-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgsttranscoder-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgsturidownloader-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgsturidownloader-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstva-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstva-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstwayland-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstwayland-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstwebrtc-1.0.so.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstwebrtc-1.0.so.0.2402.0
