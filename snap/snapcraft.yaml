@@ -61,8 +61,13 @@ parts:
     build-environment:
       - CARGO_BUILD_JOBS: $CRAFT_PARALLEL_BUILD_COUNT
       - PKG_CONFIG_PATH: $CRAFT_STAGE/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/pkgconfig:$PKG_CONFIG_PATH 
+      - CARGO: /usr/bin/cargo-1.80
+      - RUSTC: /usr/bin/rustc-1.80
     organize: 
       snap/fractal/current: .
+    override-pull: |
+      craftctl default
+      git am $CRAFT_PROJECT_DIR/snap/local/0001-build-find_program-cargo-1.80-and-rustc-1.80.patch
     override-build: |
       craftctl default
       mkdir -p $CRAFT_PART_INSTALL/meta/gui

@@ -1,0 +1,30 @@
+From 6b9783313d5a9d565d329283c374348ec9f08981 Mon Sep 17 00:00:00 2001
+From: Sergio Schvezov <sergio.schvezov@canonical.comd>
+Date: Thu, 3 Oct 2024 08:46:51 -0300
+Subject: [PATCH] build: find_program cargo-1.80 and rustc-1.80
+
+Signed-off-by: root <root@snapcraft-fractal-on-amd64-for-amd64-48788541.lxd>
+---
+ meson.build | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 864a41d4..27ba4224 100644
+--- a/meson.build
++++ b/meson.build
+@@ -53,10 +53,10 @@ glib_compile_resources = find_program('glib-compile-resources', required: true)
+ glib_compile_schemas = find_program('glib-compile-schemas', required: true)
+ desktop_file_validate = find_program('desktop-file-validate', required: false)
+ appstreamcli = find_program('appstreamcli', required: false)
+-cargo = find_program('cargo', required: true)
++cargo = find_program('cargo-1.80', required: true)
+ cargo_version = run_command(cargo, '--version', check: true).stdout().strip()
+ message(cargo_version)
+-rustc_version = run_command('rustc', '--version', check: true).stdout().strip()
++rustc_version = run_command('rustc-1.80', '--version', check: true).stdout().strip()
+ message(rustc_version)
+ 
+ prefix = get_option('prefix')
+-- 
+2.43.0
+
