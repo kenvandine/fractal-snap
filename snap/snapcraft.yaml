@@ -37,12 +37,20 @@ parts:
       - -usr/lib/*/pkgconfig
       - -usr/share
 
+  grass:
+    plugin: rust
+    source: https://github.com/connorskees/grass.git
+    source-type: git
+    source-tag: '0.13.4'
+    organize:
+      grass: usr/bin/
+
   fractal:
-    after: [ libshumate, pipewire ]
+    after: [ libshumate, pipewire, grass ]
     parse-info: [ usr/share/metainfo/org.gnome.Fractal.metainfo.xml ]
     source: https://gitlab.gnome.org/GNOME/fractal.git
     source-type: git
-    source-tag: '8'
+    source-tag: '10'
     plugin: meson
     meson-parameters: [--prefix=/snap/fractal/current/usr, -Dprofile=default, -Doptimization=3, -Dbuildtype=release]
     build-packages:
@@ -55,19 +63,13 @@ parts:
       - libprotobuf-c-dev
       - libclang-dev
       - libspa-0.2-dev
-      - rustc-1.80
-      - cargo-1.80
       - xdg-desktop-portal-dev
     build-environment:
       - CARGO_BUILD_JOBS: $CRAFT_PARALLEL_BUILD_COUNT
       - PKG_CONFIG_PATH: $CRAFT_STAGE/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/pkgconfig:$PKG_CONFIG_PATH 
-      - CARGO: /usr/bin/cargo-1.80
-      - RUSTC: /usr/bin/rustc-1.80
+      - PATH: $CRAFT_STAGE/usr/bin:$PATH
     organize: 
       snap/fractal/current: .
-    override-pull: |
-      craftctl default
-      git am $CRAFT_PROJECT_DIR/snap/local/0001-build-find_program-cargo-1.80-and-rustc-1.80.patch
     override-build: |
       craftctl default
       mkdir -p $CRAFT_PART_INSTALL/meta/gui
