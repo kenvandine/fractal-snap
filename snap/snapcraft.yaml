@@ -20,6 +20,9 @@ apps:
     command: usr/bin/fractal
     common-id: org.gnome.Fractal
     desktop: usr/share/applications/org.gnome.Fractal.desktop
+    environment:
+      # avoid crash when loading video if using vulkan
+      GSK_RENDERER: ngl
     plugs:
       - network
       - network-status
