@@ -124,8 +124,11 @@ parts:
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libpipewire*
       # Use newer source-built librsvg from gnome-sdk
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/librsvg-2.so.*
+      # Use newer source-built pango from gnome-sdk
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libpango-1.0.so.*
     prime:
       - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/spa-0.2
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libpipewire*
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/librsvg-2.so.*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libpango-1.0.so.*
