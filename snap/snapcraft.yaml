@@ -105,8 +105,13 @@ parts:
     plugin: rust
     build-packages:
       - cargo-c
+    override-pull: |
+      craftctl default
+      patch -p1 < $CRAFT_PROJECT_DIR/snap/gst-plugin-gtk4.patch
     override-build: |
-      cargo cinstall --prefix "${SNAPCRAFT_PART_INSTALL}/usr" \
+      cargo cinstall \
+        --prefix "${SNAPCRAFT_PART_INSTALL}/usr" \
+        --libdir "${SNAPCRAFT_PART_INSTALL}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}" \
         --release \
         --library-type=cdylib \
         --features=gtk_v4_14,x11egl,x11glx,waylandegl,dmabuf
