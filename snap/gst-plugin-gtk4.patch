@@ -1,0 +1,18 @@
+diff --color -Naur gst-plugin-gtk4-0.13.4.old/Cargo.toml gst-plugin-gtk4-0.13.4/Cargo.toml
+--- gst-plugin-gtk4-0.13.4.old/Cargo.toml	1970-01-01 01:00:01.000000000 +0100
++++ gst-plugin-gtk4-0.13.4/Cargo.toml	2025-04-02 16:49:39.000000000 +0200
+@@ -31,13 +31,12 @@
+ repository = "https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs"
+ 
+ [package.metadata.capi]
+-min_version = "0.9.21"
++min_version = "0.8.0"
+ 
+ [package.metadata.capi.header]
+ enabled = false
+ 
+ [package.metadata.capi.library]
+-import_library = false
+ install_subdir = "gstreamer-1.0"
+ versioning = false
+ 
