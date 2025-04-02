@@ -133,6 +133,8 @@ parts:
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libGL*
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libEGL*
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgbm.so.*
+      # Do not bundle libwayland
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libwayland*
     prime:
       - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/spa-0.2
@@ -145,3 +147,4 @@ parts:
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libGL*
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libEGL*
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgbm.so.*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libwayland*
