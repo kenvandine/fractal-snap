@@ -31,7 +31,7 @@ parts:
     source: https://gitlab.gnome.org/GNOME/libshumate.git
     source-tag: '1.3.0'
     plugin: meson
-    meson-parameters: [ --prefix=/usr, -Dgir=false, -Dvapi=false, -Dgtk_doc=false]
+    meson-parameters: [ --prefix=/usr, -Dgir=false, -Dvapi=false, -Dgtk_doc=false, -Dsysprof=disabled]
     prime:
       - -usr/include
       - -usr/lib/*/pkgconfig
@@ -98,41 +98,34 @@ parts:
       - -usr/lib/*/pkgconfig
       - -usr/include
 
+  # This is not available in the noble archive
+  gst-plugin-gtk4:
+    source: https://crates.io/api/v1/crates/gst-plugin-gtk4/0.13.4/download
+    source-type: tar
+    plugin: rust
+    build-packages:
+      - cargo-c
+    override-build: |
+      cargo cinstall --prefix "${SNAPCRAFT_PART_INSTALL}/usr" \
+        --release \
+        --library-type=cdylib \
+        --features=gtk_v4_14,x11egl,x11glx,waylandegl,dmabuf
+    prime:
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/gstreamer-1.0/libgstgtk4.so
 
   deps:
     plugin: nil
     stage-packages:
-      - libgstreamer-plugins-bad1.0-0
+      - gstreamer1.0-plugins-bad
       - libprotobuf-c1
+    stage:
+      # Use source-built pipewire
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/spa-0.2
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libpipewire*
+      # Use newer source-built librsvg from gnome-sdk
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/librsvg-2.so.*
     prime:
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libprotobuf-c.so.1.0.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libprotobuf-c.so.1
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstadaptivedemux-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstadaptivedemux-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstbadaudio-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstbadaudio-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstcodecparsers-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstcodecparsers-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstcodecs-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstcodecs-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstinsertbin-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstinsertbin-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstisoff-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstisoff-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstmpegts-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstmpegts-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstplay-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstplay-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstplayer-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstplayer-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstsctp-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstsctp-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgsttranscoder-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgsturidownloader-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgsturidownloader-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstva-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstva-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstwayland-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstwayland-1.0.so.0.2402.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstwebrtc-1.0.so.0
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgstwebrtc-1.0.so.0.2402.0
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/spa-0.2
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libpipewire*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/librsvg-2.so.*
