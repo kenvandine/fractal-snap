@@ -129,8 +129,34 @@ parts:
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libpipewire*
       # Use newer source-built librsvg from gnome-sdk
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/librsvg-2.so.*
+      # Use newer source-built pango from gnome-sdk
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libpango-1.0.so.*
+      # Do not bundle mesa/glvnd
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/dri
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libdrm*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libglapi.so.*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libGL*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libEGL*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgbm.so.*
+      # Do not bundle libwayland
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libwayland*
+      # Do not bundle xcb/x11
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libxcb*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libx11*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libxkbcommon-x11.so.*
     prime:
       - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/spa-0.2
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libpipewire*
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/librsvg-2.so.*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libpango-1.0.so.*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/dri
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libglapi.so.*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libdrm*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libGL*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libEGL*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libgbm.so.*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libwayland*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libxcb*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libx11*
+      - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libxkbcommon-x11.so.*
