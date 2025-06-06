@@ -112,6 +112,11 @@ parts:
       craftctl default
       patch -p1 < $CRAFT_PROJECT_DIR/snap/gst-plugin-gtk4.patch
     override-build: |
+      # https://bugs.launchpad.net/bugs/1886861
+      if [ -n "$http_proxy" ]; then
+        export CARGO_HTTP_PROXY="${http_proxy}"
+        export CARGO_HTTPS_PROXY="${http_proxy}"
+      fi
       cargo cinstall \
         --prefix "${SNAPCRAFT_PART_INSTALL}/usr" \
         --libdir "${SNAPCRAFT_PART_INSTALL}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}" \
