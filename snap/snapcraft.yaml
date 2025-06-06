@@ -49,7 +49,7 @@ parts:
       grass: usr/bin/
 
   fractal:
-    after: [ libshumate, pipewire, grass ]
+    after: [ libshumate, pipewire, grass, gst-plugin-gtk4 ]
     parse-info: [ usr/share/metainfo/org.gnome.Fractal.metainfo.xml ]
     source: https://gitlab.gnome.org/GNOME/fractal.git
     source-type: git
