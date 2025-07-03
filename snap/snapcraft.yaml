@@ -113,7 +113,7 @@ parts:
       patch -p1 < $CRAFT_PROJECT_DIR/snap/gst-plugin-gtk4.patch
     override-build: |
       # https://bugs.launchpad.net/bugs/1886861
-      if [ -n "$http_proxy" ]; then
+      if [ -n "${http_proxy:-}" ]; then
         export CARGO_HTTP_PROXY="${http_proxy}"
         export CARGO_HTTPS_PROXY="${http_proxy}"
       fi
@@ -168,3 +168,15 @@ parts:
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libxcb*
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libx11*
       - -usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libxkbcommon-x11.so.*
+
+  # Find files provided by the base and platform snap and ensure they aren't
+  # duplicated in this snap
+  cleanup:
+    after: [deps, gst-plugin-gtk4, pipewire, fractal, grass, libshumate]
+    plugin: nil
+    build-snaps: [core24, gtk-common-themes, gnome-46-2404]
+    override-prime: |
+      set -eux
+      for snap in "core24" "gtk-common-themes" "gnome-46-2404"; do
+        cd "/snap/$snap/current" && find . -type f,l -name *.so.* -exec rm -f "$CRAFT_PRIME/{}" \;
+      done
