@@ -49,7 +49,7 @@ parts:
       grass: usr/bin/
 
   fractal:
-    after: [ libshumate, pipewire, grass, gst-plugin-gtk4 ]
+    after: [ libshumate, grass ]
     parse-info: [ usr/share/metainfo/org.gnome.Fractal.metainfo.xml ]
     source: https://gitlab.gnome.org/GNOME/fractal.git
     source-type: git
@@ -80,51 +80,6 @@ parts:
       for i in `find $CRAFT_PART_INSTALL/meta/gui/icons -name "*.svg" -o -name "*.png"`; do
         mv $i "`dirname $i`/snap.$CRAFT_PROJECT_NAME.`basename $i`"
       done
-
-  pipewire:
-    source: https://gitlab.freedesktop.org/pipewire/pipewire.git
-    source-tag: '0.3.79'
-    plugin: meson
-    meson-parameters:
-      - --prefix=/usr
-      - --buildtype=release
-      - --strip
-      - -Dalsa=disabled
-      - -Dpipewire-alsa=disabled
-      - -Djack=disabled
-      - -Dpipewire-jack=disabled
-      - -Dsession-managers=[]
-      - -Dexamples=disabled
-      - -Dman=disabled
-      - -Dtests=disabled
-    prime:
-      - -usr/lib/*/pkgconfig
-      - -usr/include
-
-  # This is not available in the noble archive
-  gst-plugin-gtk4:
-    source: https://crates.io/api/v1/crates/gst-plugin-gtk4/0.13.4/download
-    source-type: tar
-    plugin: rust
-    build-packages:
-      - cargo-c
-    override-pull: |
-      craftctl default
-      patch -p1 < $CRAFT_PROJECT_DIR/snap/gst-plugin-gtk4.patch
-    override-build: |
-      # https://bugs.launchpad.net/bugs/1886861
-      if [ -n "${http_proxy:-}" ]; then
-        export CARGO_HTTP_PROXY="${http_proxy}"
-        export CARGO_HTTPS_PROXY="${http_proxy}"
-      fi
-      cargo cinstall \
-        --prefix "${SNAPCRAFT_PART_INSTALL}/usr" \
-        --libdir "${SNAPCRAFT_PART_INSTALL}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}" \
-        --release \
-        --library-type=cdylib \
-        --features=gtk_v4_14,x11egl,x11glx,waylandegl,dmabuf
-    prime:
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/gstreamer-1.0/libgstgtk4.so
 
   deps:
     plugin: nil
@@ -172,7 +127,7 @@ parts:
   # Find files provided by the base and platform snap and ensure they aren't
   # duplicated in this snap
   cleanup:
-    after: [deps, gst-plugin-gtk4, pipewire, fractal, grass, libshumate]
+    after: [deps, fractal, grass, libshumate]
     plugin: nil
     build-snaps: [core26, gtk-common-themes, gnome-core26]
     override-prime: |
