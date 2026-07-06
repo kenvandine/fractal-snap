@@ -102,15 +102,3 @@ parts:
     stage:
       - usr/lib/
       - usr/share/
-
-  # Find files provided by the base and platform snap and ensure they aren't
-  # duplicated in this snap
-  cleanup:
-    after: [deps, fractal, grass, libshumate]
-    plugin: nil
-    build-snaps: [core26, gtk-common-themes, gnome-core26]
-    override-prime: |
-      set -eux
-      for snap in "core26" "gtk-common-themes" "gnome-core26"; do
-        cd "/snap/$snap/current" && find . -type f,l -name *.so.* -exec rm -f "$CRAFT_PRIME/{}" \;
-      done
